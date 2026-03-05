@@ -3,6 +3,7 @@ prijectcrypto-voting-Elite/
 ├── main.py
 ├── config.py
 ├── database.py
+├── requirements.txt
 │
 ├── db/
 │   ├── schema.sql

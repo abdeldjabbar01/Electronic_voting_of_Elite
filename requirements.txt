@@ -1,0 +1,6 @@
+# no external dependencies needed yet
+Flask
+Flask-Login
+python-dotenv
+supabase
+cryptography

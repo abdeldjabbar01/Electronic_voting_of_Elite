@@ -1,0 +1,5 @@
+Voting Codes for: {election_title}
+ID: {election_id}
+
+N1: {n1_code}
+N2: {n2_code}

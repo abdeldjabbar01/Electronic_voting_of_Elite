@@ -1,11 +1,6 @@
-# helpers.py
-# Purpose: Provide utility functions
-# Functionality:
-#   - Logging, validation, formatting
-#   - Reusable code across modules
-# What it does:
-#   - Supports main operations without duplicating code
-# Returns:
-#   - Depends on utility function
-# Notes:
-#   - Contributors add any commonly used helper function here
+
+def str_to_int(s: str) -> int:
+    return int.from_bytes(s.encode('utf-8'), 'big')
+
+def int_to_str(n: int) -> str:
+    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode('utf-8')

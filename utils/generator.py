@@ -1,9 +1,15 @@
+"""
+generator.py
+Member 2: Generate random N1 and N2 codes.
 
+Required functions:
+- generate_code(length=12) -> str
+    Generate random alphanumeric code.
+
+- generate_voter_codes() -> tuple
+    Return (N1, N2) each 12 characters long.
+"""
 import random
 from config import CODE_LENGTH, CHAR_SET
 
-def generate_code():
-    return ''.join(random.choices(CHAR_SET, k=CODE_LENGTH))
-
-def generate_voter_codes():
-    return generate_code(), generate_code()
+# TODO: Implement the functions listed above

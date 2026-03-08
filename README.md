@@ -5,7 +5,7 @@
 - benabed farouk: utils/ and voting/ folders
 - abderrahman belahraoui: entities/ folder
 - ABBA ABDELDJABBAR: cli/ folder
-- Hammou huache: Root files and email templates
+- Hammou huache: email templates
 
 ## How to Run
 1. Create virtual environment: `python -m venv venv`

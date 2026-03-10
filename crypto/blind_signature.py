@@ -1,19 +1,15 @@
-from crypto.rsa_utils import rsa_sign, rsa_verify
+"""
+blind_signature.py
+Member 1: Blind signature functions.
 
-def blind_message(m, k, pubkey):
-    e, N = pubkey
-    blinded = (m * pow(k, e, N)) % N
-    return blinded
+Required functions:
+- blind_message(m: int, k: int, pubkey: tuple) -> int
+    Blind message m using k and public key.
 
-def sign_blinded_message(blinded_msg, privkey):
-    signed_blinded = rsa_sign(blinded_msg, privkey)
-    return signed_blinded
+- unblind_signature(signed_blinded: int, k: int, pubkey: tuple) -> int
+    Unblind the signed blinded message.
 
-def unblind_signature(signed_blinded, k, pubkey):
-    _, N = pubkey
-    k_inv = pow(k, -1, N) 
-    signature = (signed_blinded * k_inv) % N
-    return signature
-
-def verify_signature(m, signature, pubkey):
-    return rsa_verify(m, signature, pubkey)
+Note: Use rsa_utils.rsa_verify for verification later if needed.
+"""
+# TODO: Import helper functions from rsa_utils if needed
+# TODO: Implement the functions listed above

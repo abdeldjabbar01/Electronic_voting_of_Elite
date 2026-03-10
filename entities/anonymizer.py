@@ -1,16 +1,15 @@
-from . import commissioner
+"""
+anonymizer.py
+Member 3: Anonymizer functions (ballot reception).
+
+Required functions:
+- accept_ballot(election_id: int, n1: str, encrypted_ballot: int, signature: int) -> bool
+    1. Check N1 using commissioner.validate_n1.
+    2. If valid, store (encrypted_ballot, signature) in ballots table.
+    3. Mark N1 as used using commissioner.use_n1.
+    4. Return True on success.
+"""
 from supabase_client import get_supabase
+from . import commissioner
 
-def accept_ballot(election_id: int, n1: str, encrypted_ballot: int, signature: int) -> bool:
-    if not commissioner.validate_n1(election_id, n1):
-        return False
-
-    supabase = get_supabase()
-    data = {
-        'election_id': election_id,
-        'encrypted_ballot': str(encrypted_ballot),
-        'signature': str(signature)
-    }
-    supabase.table('ballots').insert(data).execute()
-    commissioner.use_n1(election_id, n1)
-    return True
+# TODO: Implement the function listed above

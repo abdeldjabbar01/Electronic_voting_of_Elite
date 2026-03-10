@@ -1,6 +1,12 @@
+"""
+helpers.py
+Member 2: Convert strings to integers and back.
 
-def str_to_int(s: str) -> int:
-    return int.from_bytes(s.encode('utf-8'), 'big')
+Required functions:
+- str_to_int(s: str) -> int
+    Convert string to integer using UTF-8 encoding.
 
-def int_to_str(n: int) -> str:
-    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode('utf-8')
+- int_to_str(n: int) -> str
+    Convert integer back to original string.
+"""
+# TODO: Implement the functions listed above

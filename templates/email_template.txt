@@ -1,5 +1,3 @@
-Voting Codes for: {election_title}
-ID: {election_id}
-
-N1: {n1_code}
-N2: {n2_code}
+templates/email_template.txt
+Member 5: Plain text email template
+Use the same variables: {election_title}, {election_id}, {n1_code}, {n2_code}

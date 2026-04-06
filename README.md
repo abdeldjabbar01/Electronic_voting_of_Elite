@@ -114,7 +114,6 @@ electronic_voting_project/
 │       ├── voter_code.txt          # Voter code email
 │       └── vote_confirmation.txt   # Confirmation email
 │
-├── netlify/functions/              # Serverless functions for deployment
 │
 ├── supabase/                       # Database migrations and config
 │

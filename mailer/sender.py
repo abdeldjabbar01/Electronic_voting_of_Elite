@@ -248,7 +248,7 @@ def send_voter_codes_email(
     
     # Build vote link using environment variable or fallback to localhost
     site_domain = os.environ.get('SITE_DOMAIN', 'http://localhost:5000')
-    vote_link = f"{site_domain}/vote/{vote_id}" if vote_id else "#"
+    vote_link = f"{site_domain}" if vote_id else "#"
     
     # Plain text fallback
     text_body = f"""Your Voting Codes for: {vote_title}

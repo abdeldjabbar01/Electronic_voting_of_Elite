@@ -1,0 +1,51 @@
+═══════════════════════════════════════════════════════════════
+                    SECUREVOTE - YOUR VOTING CODES
+═══════════════════════════════════════════════════════════════
+
+Hello,
+
+You have been registered to participate in:
+>> {vote_title}
+
+═══════════════════════════════════════════════════════════════
+                       YOUR SECRET CODES
+═══════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────┐
+│  N1 CODE (Voter ID)                                         │
+│                                                             │
+│              {n1_code}                                      │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  N2 CODE (Ballot ID)                                        │
+│                                                             │
+│              {n2_code}                                      │
+└─────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+                         HOW TO VOTE
+═══════════════════════════════════════════════════════════════
+
+1. Visit the SecureVote website
+2. Enter your N1 code to verify your identity
+3. Enter your N2 code to submit your ballot
+4. Make your choice and confirm
+
+═══════════════════════════════════════════════════════════════
+                       SECURITY NOTES
+═══════════════════════════════════════════════════════════════
+
+⚠  IMPORTANT: Keep these codes secure and private!
+
+• N1 code verifies you are eligible to vote
+• N2 code ensures your vote remains anonymous
+• Never share these codes with anyone
+• Each code can only be used once
+
+If you did not request these codes, please contact the
+administrator immediately.
+
+Thank you for participating!
+SecureVote - Electronic Voting System
+═══════════════════════════════════════════════════════════════

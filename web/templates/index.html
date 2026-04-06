@@ -1,0 +1,1746 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Electronic Voting System{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>Electronic Voting System</h1>
+    <p>Secure, transparent, and professional voting platform</p>
+</div>
+
+<div class="main-content">
+    <div class="filter-section">
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all" onclick="filterVotes('all')">All</button>
+            <button class="filter-btn" data-filter="live" onclick="filterVotes('live')">Live Votes</button>
+            <button class="filter-btn" data-filter="finished" onclick="filterVotes('finished')">Finished Votes</button>
+            <button class="filter-btn" data-filter="foryou" id="forYouBtn" onclick="filterVotes('foryou')" style="display: none;">For You</button>
+        </div>
+    </div>
+
+    <div class="votes-list" id="votes-list">
+        {% for vote in votes|sort(attribute='created_at', reverse=true) %}
+        {% set is_live = vote.is_active and (not vote.end_date or vote.end_date > now) %}
+        <div class="vote-card {% if is_live %}vote-live{% else %}vote-finished{% endif %}" 
+             data-status="{% if is_live %}live{% else %}finished{% endif %}"
+             data-voter-emails="{{ vote_voters[vote.id]|join(',') if vote_voters.get(vote.id) else '' }}">
+            
+            <div class="card-header" data-vote-id="{{ vote.id }}" data-end-date="{{ vote.end_date.isoformat() if vote.end_date else '' }}">
+                <div class="header-left">
+                    <h2 class="vote-title">{{ vote.title }}</h2>
+                    <div class="vote-meta-row">
+                        <span class="vote-type">{{ "Choice" if vote.vote_type == 'choice' else "Rating" }}</span>
+                        <span class="divider">|</span>
+                        <span class="vote-id">ID: {{ vote.id }}</span>
+                        <span class="divider">|</span>
+                        <span class="vote-created">{{ vote.created_at.strftime('%Y-%m-%d') if vote.created_at else 'Unknown' }}</span>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    {% if is_live %}
+                        <div class="status-badge live">
+                            <span class="status-dot"></span>
+                            LIVE
+                        </div>
+                        {% if vote.end_date %}
+                        <div class="countdown" data-end="{{ vote.end_date.isoformat() }}">
+                            --:--:--
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="status-badge finished">FINISHED</div>
+                    {% endif %}
+                    <div class="expand-arrow" id="arrow-{{ vote.id }}">▼</div>
+                </div>
+            </div>
+            
+            <div class="card-body" id="body-{{ vote.id }}">
+                <div class="body-content">
+                    <p class="vote-description">{{ vote.description or 'No description provided' }}</p>
+                    
+                    {% if is_live %}
+                    <div class="inline-vote-section">
+                        <h3 class="vote-section-title">Cast Your Vote</h3>
+                        <form class="inline-vote-form" id="vote-form-{{ vote.id }}" data-vote-id="{{ vote.id }}" data-vote-type="{{ vote.vote_type }}">
+                            <div class="code-inputs">
+                                <div class="code-field">
+                                    <label for="n1-{{ vote.id }}">N1 Code (Voter ID)</label>
+                                    <input type="text" id="n1-{{ vote.id }}" name="n1_code" placeholder="Enter N1 code" required>
+                                </div>
+                                <div class="code-field">
+                                    <label for="n2-{{ vote.id }}">N2 Code (Ballot ID)</label>
+                                    <input type="text" id="n2-{{ vote.id }}" name="n2_code" placeholder="Enter N2 code" required>
+                                </div>
+                            </div>
+                            
+                            {% if vote.vote_type == 'choice' %}
+                            <div class="options-section">
+                                <label>Select your choice:</label>
+                                <div class="vote-options" id="options-{{ vote.id }}">
+                                    <p class="loading-options">Loading options...</p>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="rating-section">
+                                <label>Your Rating (0-10):</label>
+                                <div class="rating-slider-container">
+                                    <div class="rating-line">
+                                        <div class="rating-marks">
+                                            <span class="mark" data-value="0">0</span>
+                                            <span class="mark" data-value="1">1</span>
+                                            <span class="mark" data-value="2">2</span>
+                                            <span class="mark" data-value="3">3</span>
+                                            <span class="mark" data-value="4">4</span>
+                                            <span class="mark" data-value="5">5</span>
+                                            <span class="mark" data-value="6">6</span>
+                                            <span class="mark" data-value="7">7</span>
+                                            <span class="mark" data-value="8">8</span>
+                                            <span class="mark" data-value="9">9</span>
+                                            <span class="mark" data-value="10">10</span>
+                                        </div>
+                                        <input type="range" id="rating-{{ vote.id }}" min="0" max="10" step="0.001" value="5" oninput="syncRatingInput(parseInt('{{ vote.id }}', 10))">
+                                        <div class="rating-thumb" id="rating-thumb-{{ vote.id }}">5.000</div>
+                                    </div>
+                                    <div class="rating-labels">
+                                        <span class="label-low">Poor</span>
+                                        <span class="label-mid">Average</span>
+                                        <span class="label-high">Excellent</span>
+                                    </div>
+                                    <div class="rating-input-row" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                                        <label style="margin: 0; font-weight: 500;">Selected Value:</label>
+                                        <input type="number" id="rating-value-{{ vote.id }}" name="choice" min="0" max="10" step="0.001" value="5.000" style="width: 80px; text-align: center;" required oninput="syncRatingSlider(parseInt('{{ vote.id }}', 10))">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <button type="submit" class="btn btn-primary btn-large">
+                                <span>Submit Vote</span>
+                                <span>→</span>
+                            </button>
+                        </form>
+                        <div class="vote-result" id="result-{{ vote.id }}"></div>
+                    </div>
+                    {% else %}
+                    <div class="inline-results-section">
+                        <h3 class="vote-section-title">Results</h3>
+                        <div class="results-container" id="results-{{ vote.id }}">
+                            <p class="loading-results">Loading results...</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-votes">
+            <h3>No Votes Found</h3>
+            <p>There are no voting events available at the moment.</p>
+            <a href="{{ url_for('create_vote_page') }}" class="btn btn-primary btn-large">Create a Vote</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="create-vote-fab">
+        <a href="{{ url_for('create_vote_page') }}" class="fab-btn" title="Create New Vote">New Vote</a>
+    </div>
+</div>
+
+<style>
+/* Filter Section */
+.filter-section {
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.7rem 1.5rem;
+    border: 2px solid var(--border-color);
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-btn:hover {
+    border-color: #41431B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(65, 67, 27, 0.2);
+}
+
+.filter-btn.active {
+    background: linear-gradient(145deg, #41431B, #2a2d12);
+    color: #F8F3E1;
+    border-color: #41431B;
+    box-shadow: 0 4px 12px rgba(65, 67, 27, 0.3);
+}
+
+/* Votes List */
+.votes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Vote Card - Enhanced Design */
+.vote-card {
+    background: linear-gradient(145deg, #ffffff, #fafafa);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.vote-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(65, 67, 27, 0.15), 0 8px 16px rgba(174, 183, 132, 0.2);
+}
+
+.vote-card.vote-live {
+    border-left: 4px solid #41431B;
+}
+
+.vote-card.vote-finished {
+    border-left: 4px solid #AEB784;
+}
+
+/* Card Header */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    background: linear-gradient(145deg, #ffffff, #f8f8f8);
+    transition: background 0.2s ease;
+}
+
+.card-header:hover {
+    background: linear-gradient(145deg, #fafafa, #f0f0f0);
+}
+
+.header-left {
+    flex: 1;
+}
+
+.vote-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.vote-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.vote-type {
+    background: var(--secondary-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+.divider {
+    color: var(--border-color);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.live {
+    background: linear-gradient(145deg, #F8F3E1, #E3DBBB);
+    color: #41431B;
+    box-shadow: 0 2px 4px rgba(65, 67, 27, 0.15);
+}
+
+.status-badge.finished {
+    background: linear-gradient(145deg, #E3DBBB, #AEB784);
+    color: #41431B;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #41431B;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.countdown {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #41431B;
+    background: linear-gradient(145deg, #E3DBBB, #F8F3E1);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 2px rgba(65, 67, 27, 0.1);
+}
+
+.expand-arrow {
+    font-size: 1.2rem;
+    color: #41431B;
+    transition: transform 0.3s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #E3DBBB;
+}
+
+.expand-arrow.rotated {
+    transform: rotate(180deg);
+}
+
+/* Card Body (Expandable) */
+.card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.card-body.expanded {
+    max-height: 800px;
+    opacity: 1;
+}
+
+.body-content {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+}
+
+.vote-description {
+    font-size: 1rem;
+    color: #41431B;
+    line-height: 1.6;
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: #F8F3E1;
+    border-radius: 8px;
+    border-left: 3px solid #41431B;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.live-text {
+    color: #166534;
+}
+
+.finished-text {
+    color: #6b7280;
+}
+
+.action-area {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+/* Button Styles */
+.btn-large {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(145deg, #41431B, #2a2d12);
+    color: #F8F3E1;
+    box-shadow: 0 4px 12px rgba(65, 67, 27, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(65, 67, 27, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(145deg, #AEB784, #E3DBBB);
+    color: #41431B;
+    box-shadow: 0 4px 12px rgba(65, 67, 27, 0.2);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(65, 67, 27, 0.3);
+}
+
+/* No Votes */
+.no-votes {
+    text-align: center;
+    padding: 4rem 2rem;
+    border: 2px dashed #E3DBBB;
+    background: linear-gradient(145deg, #F8F3E1, #E3DBBB);
+    border-radius: 12px;
+    box-shadow: inset 0 2px 4px rgba(65, 67, 27, 0.05);
+}
+
+.no-votes-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.no-votes h3 {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 1.3rem;
+}
+
+.no-votes p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+/* Inline Voting Form */
+.inline-vote-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #E3DBBB;
+}
+
+.vote-section-title {
+    font-size: 1.1rem;
+    color: #41431B;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.inline-vote-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.code-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.code-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.code-field label {
+    font-size: 0.8rem;
+    color: #41431B;
+    font-weight: 500;
+}
+
+.code-field input {
+    padding: 0.6rem;
+    border: 1px solid #E3DBBB;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #F8F3E1;
+}
+
+.code-field input:focus {
+    outline: none;
+    border-color: #41431B;
+}
+
+.options-section,
+.rating-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.options-section label,
+.rating-section label {
+    font-size: 0.9rem;
+    color: #41431B;
+    font-weight: 500;
+}
+
+.vote-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.vote-option-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    background: #F8F3E1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.vote-option-label:hover {
+    background: #E3DBBB;
+}
+
+.vote-option-label input[type="radio"] {
+    margin: 0;
+}
+
+.rating-input {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rating-label {
+    cursor: pointer;
+}
+
+/* Simple Rating Slider - Site Theme */
+.rating-slider-container {
+    background: #F8F3E1;
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid #E3DBBB;
+    margin: 15px 0;
+}
+
+.rating-line {
+    position: relative;
+    height: 40px;
+    margin: 10px 0 20px 0;
+}
+
+.rating-marks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
+}
+
+.mark {
+    font-size: 12px;
+    color: #41431B;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.rating-section input[type="range"] {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: #E3DBBB;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.rating-section input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #41431B;
+    border: 2px solid #F8F3E1;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rating-section input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #41431B;
+    border: 2px solid #F8F3E1;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rating-thumb {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    background: #41431B;
+    color: #F8F3E1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.rating-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
+    font-size: 12px;
+    color: #41431B;
+}
+
+.rating-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #E3DBBB;
+}
+
+.rating-input-row label {
+    margin: 0;
+    font-weight: 500;
+    color: #41431B;
+    font-size: 14px;
+}
+
+.rating-input-row input[type="number"] {
+    width: 80px;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #E3DBBB;
+    border-radius: 6px;
+    color: #41431B;
+}
+
+.rating-input-row input[type="number"]:focus {
+    outline: none;
+    border-color: #41431B;
+}
+
+.rating-label input[type="radio"] {
+    display: none;
+}
+
+.rating-star {
+    font-size: 1.5rem;
+    color: #E3DBBB;
+    transition: color 0.2s;
+}
+
+.rating-label input[type="radio"]:checked + .rating-star,
+.rating-label:hover .rating-star {
+    color: #41431B;
+}
+
+.vote-result {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.vote-result.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.vote-result.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Inline Results */
+.inline-results-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #E3DBBB;
+}
+
+.results-container {
+    background: #F8F3E1;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.loading-results,
+.loading-options {
+    color: #AEB784;
+    font-style: italic;
+}
+
+/* Hidden cards for filtering */
+.vote-card.hidden {
+    display: none;
+}
+
+/* Vote Results Styling */
+.counting-state {
+    text-align: center;
+    padding: 2rem;
+}
+
+.counting-state .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #E3DBBB;
+    border-top-color: #41431B;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.counting-state p {
+    color: #41431B;
+    font-weight: 500;
+}
+
+.vote-results {
+    background: #F8F3E1;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #E3DBBB;
+}
+
+.total-votes {
+    font-weight: 600;
+    color: #41431B;
+}
+
+.result-item {
+    margin: 1rem 0;
+}
+
+.result-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.result-label span:first-child {
+    font-weight: 500;
+    color: #41431B;
+}
+
+.result-label span:last-child {
+    color: #555;
+    font-size: 0.85rem;
+}
+
+.result-bar {
+    background: #E3DBBB;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.result-fill {
+    background: #41431B;
+    height: 100%;
+    transition: width 0.8s ease;
+}
+
+.no-votes-message {
+    text-align: center;
+    padding: 2rem;
+    color: #555;
+}
+
+.results-error {
+    text-align: center;
+    padding: 2rem;
+    color: #721c24;
+}
+
+.results-error .retry-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: #41431B;
+    color: #F8F3E1;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Rating Results - Average with point on line */
+.rating-results .average-display {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: #F8F3E1;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.rating-results .average-label {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+.rating-results .average-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #41431B;
+    margin-bottom: 1rem;
+}
+
+.rating-results .rating-scale {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.rating-results .scale-line {
+    position: relative;
+    height: 4px;
+    background: #E3DBBB;
+    border-radius: 2px;
+    margin: 1rem 0;
+}
+
+.rating-results .scale-point {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    background: #41431B;
+    border-radius: 50%;
+    border: 3px solid #F8F3E1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rating-results .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.rating-results .rating-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.rating-results .rating-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.rating-results .rating-value {
+    font-weight: 600;
+    color: #41431B;
+}
+
+.rating-results .rating-count {
+    color: #555;
+    font-size: 0.75rem;
+}
+
+/* Rating Results - Numeric with Statistics Curve */
+.rating-results {
+    background: #F8F3E1;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.rating-results .results-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #E3DBBB;
+}
+
+.rating-results .total-votes {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* Numeric Result */
+.numeric-result {
+    text-align: center;
+    padding: 1.5rem;
+    background: #41431B;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.result-number {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #F8F3E1;
+    line-height: 1;
+}
+
+.result-label {
+    font-size: 1rem;
+    color: #E3DBBB;
+    margin-top: 0.5rem;
+}
+
+.result-range {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Statistics Summary */
+.stats-summary {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 6px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-name {
+    display: block;
+    font-size: 0.7rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-val {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #41431B;
+    margin-top: 0.25rem;
+}
+
+/* Distribution Curve */
+.distribution-curve {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.curve-title {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.curve-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    height: 150px;
+    padding: 0 0.5rem;
+    border-bottom: 2px solid #E3DBBB;
+    padding-bottom: 8px;
+}
+
+.curve-bar-wrapper {
+    flex: 1;
+    max-width: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.curve-bar {
+    width: 100%;
+    background: #41431B;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.8s ease;
+    min-height: 4px;
+}
+
+.curve-bar-wrapper:nth-child(odd) .curve-bar {
+    background: #5a5c24;
+}
+
+.curve-label {
+    font-size: 0.7rem;
+    color: #555;
+    margin-top: 4px;
+    text-align: center;
+}
+
+.curve-count {
+    font-size: 0.65rem;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* Simple Rating Result */
+.rating-results.simple {
+    background: linear-gradient(145deg, #41431B, #5a5c24);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(65, 67, 27, 0.2);
+}
+
+.simple-rating {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-count-submitted {
+    font-size: 0.75rem;
+    color: #E3DBBB;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.rating-average {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #F8F3E1;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rating-label {
+    font-size: 0.8rem;
+    color: #AEB784;
+    font-weight: 500;
+}
+
+/* Choice Results - Simple Bar Chart */
+.choice-results {
+    background: #F8F3E1;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.choice-results .results-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #E3DBBB;
+}
+
+.choice-results .total-votes {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.simple-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.simple-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.simple-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #41431B;
+}
+
+.simple-bar-label .option-name {
+    font-weight: 500;
+}
+
+.simple-bar-label .vote-stats {
+    color: #555;
+    font-size: 0.85rem;
+}
+
+.simple-bar-bg {
+    height: 28px;
+    background: #E3DBBB;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.simple-bar-fill {
+    height: 100%;
+    background: #41431B;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+}
+
+.simple-bar-fill span {
+    color: #F8F3E1;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Different shades for bars */
+.simple-bar-row:nth-child(1) .simple-bar-fill { background: #41431B; }
+.simple-bar-row:nth-child(2) .simple-bar-fill { background: #5a5c24; }
+.simple-bar-row:nth-child(3) .simple-bar-fill { background: #6b6d3a; }
+.simple-bar-row:nth-child(4) .simple-bar-fill { background: #7c7e4a; }
+.simple-bar-row:nth-child(5) .simple-bar-fill { background: #8d8f5a; }
+.simple-bar-row:nth-child(n+6) .simple-bar-fill { background: #AEB784; }
+</style>
+
+<script>
+// Filter votes function
+function filterVotes(filter) {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === filter) {
+            btn.classList.add('active');
+        }
+    });
+    
+    document.querySelectorAll('.vote-card').forEach(card => {
+        const status = card.dataset.status;
+        if (filter === 'all') {
+            card.classList.remove('hidden');
+        } else if (filter === 'foryou') {
+            const cardEmails = card.dataset.voterEmails;
+            const userEmail = sessionStorage.getItem('voterEmail');
+            if (cardEmails && userEmail && cardEmails.toLowerCase().includes(userEmail.toLowerCase())) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        } else if (status === filter) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+}
+
+// Toggle card expansion
+function toggleCard(voteId) {
+    const body = document.getElementById(`body-${voteId}`);
+    const arrow = document.getElementById(`arrow-${voteId}`);
+    
+    if (body.classList.contains('expanded')) {
+        body.classList.remove('expanded');
+        arrow.classList.remove('rotated');
+    } else {
+        // Close all other cards first
+        document.querySelectorAll('.card-body.expanded').forEach(el => {
+            el.classList.remove('expanded');
+        });
+        document.querySelectorAll('.expand-arrow.rotated').forEach(el => {
+            el.classList.remove('rotated');
+        });
+        
+        // Open clicked card
+        body.classList.add('expanded');
+        arrow.classList.add('rotated');
+    }
+}
+
+// Countdown timer function
+function updateCountdowns() {
+    document.querySelectorAll('.countdown').forEach(timer => {
+        const endDate = timer.dataset.end;
+        if (!endDate) {
+            timer.textContent = 'No end date';
+            return;
+        }
+        
+        const end = new Date(endDate);
+        const now = new Date();
+        const diff = end - now;
+        
+        if (diff <= 0) {
+            timer.textContent = 'Ended';
+            timer.style.color = '#dc2626';
+            return;
+        }
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        if (days > 0) {
+            timer.textContent = `${days}d ${hours}h ${minutes}m`;
+        } else {
+            timer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+    });
+}
+
+// Update countdowns every second
+setInterval(updateCountdowns, 1000);
+updateCountdowns(); // Initial call
+
+// Show For You button if logged in
+document.addEventListener('DOMContentLoaded', function() {
+    const userEmail = sessionStorage.getItem('voterEmail');
+    if (userEmail) {
+        const forYouBtn = document.getElementById('forYouBtn');
+        if (forYouBtn) {
+            forYouBtn.style.display = 'inline-block';
+        }
+    }
+});
+
+// Handle card expansion - load data when expanded
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle card header clicks
+    document.querySelectorAll('.card-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const voteId = this.dataset.voteId;
+            if (voteId) {
+                toggleCard(voteId);
+            }
+        });
+    });
+    
+    // Setup automatic vote end detection for all votes
+    setupVoteEndTimers();
+    
+    // Load vote options when card is expanded
+    document.querySelectorAll('.vote-card').forEach(card => {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const body = card.querySelector('.card-body');
+                    if (body && body.classList.contains('expanded')) {
+                        const voteId = card.querySelector('.inline-vote-form')?.dataset.voteId;
+                        if (voteId) {
+                            loadVoteOptions(voteId);
+                        }
+                        // Auto-check if vote ended and switch to results
+                        checkAndShowResults(card, voteId);
+                    }
+                }
+            });
+        });
+        
+        observer.observe(card, { attributes: true, subtree: true });
+    });
+});
+
+// Simple vote counting following the protocol
+async function countVotesAndShowResults(voteId) {
+    const card = document.querySelector(`.card-header[data-vote-id="${voteId}"]`)?.closest('.vote-card');
+    if (!card) return;
+    
+    const resultsContainer = document.getElementById(`results-${voteId}`);
+    const voteForm = card.querySelector('.inline-vote-section');
+    const resultsSection = card.querySelector('.inline-results-section');
+    
+    // Switch to results view
+    if (voteForm) voteForm.style.display = 'none';
+    if (resultsSection) resultsSection.style.display = 'block';
+    
+    if (!resultsContainer) return;
+    
+    // Show counting spinner with site theme
+    resultsContainer.innerHTML = `
+        <div class="counting-state">
+            <div class="spinner"></div>
+            <p>Counting votes...</p>
+        </div>
+    `;
+    
+    try {
+        // Call backend to count votes, end vote, and send emails to voters
+        const response = await fetch(`/api/votes/${voteId}/count-and-end`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || `HTTP ${response.status}`);
+        }
+        
+        console.log(`Vote ${voteId} ended. Emails sent to ${data.emails_sent || 0} voters.`);
+        
+        // Display results based on vote type
+        if (data.vote_type === 'rating') {
+            showRatingResults(resultsContainer, data);
+        } else {
+            await showChoiceResults(resultsContainer, data, voteId);
+        }
+        resultsContainer.dataset.loaded = 'true';
+        
+        // Update status badge to FINISHED
+        const statusBadge = card.querySelector('.status-badge');
+        if (statusBadge) {
+            statusBadge.textContent = 'FINISHED';
+            statusBadge.classList.remove('live');
+            statusBadge.classList.add('finished');
+        }
+        
+    } catch (error) {
+        console.error('Counting error:', error);
+        resultsContainer.innerHTML = `
+            <div class="results-error">
+                <p>Vote ended - counting failed: ${error.message}</p>
+                <button onclick="countVotesAndShowResults(${voteId})" class="retry-btn">Retry</button>
+            </div>
+        `;
+    }
+}
+
+// Display rating results: simple numeric result
+function showRatingResults(container, data) {
+    const results = data.results || [];
+    const totalVotes = data.total_votes || 0;
+    
+    if (totalVotes === 0) {
+        container.innerHTML = `
+            <div class="no-votes-message">
+                <p>Vote ended - No votes were cast</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calculate average
+    let sum = 0;
+    results.forEach(r => {
+        const val = parseFloat(r.option || r.value || 0);
+        sum += val * r.count;
+    });
+    const average = sum / totalVotes;
+    
+    container.innerHTML = `
+        <div class="vote-results rating-results simple">
+            <div class="simple-rating">
+                <div class="rating-count-submitted">${totalVotes} ratings submitted</div>
+                <div class="rating-average">${average.toFixed(2)}</div>
+                <div class="rating-label">Average Rating</div>
+            </div>
+        </div>
+    `;
+}
+
+// Display choice results: simple bar charts with all options
+async function showChoiceResults(container, data, voteId) {
+    const results = data.results || [];
+    const totalVotes = data.total_votes || 0;
+    
+    // Fetch all vote options to include those with 0 votes
+    let allOptions = [];
+    try {
+        const optionsResponse = await fetch(`/api/votes/${voteId}/options`);
+        const optionsData = await optionsResponse.json();
+        allOptions = optionsData.options || [];
+    } catch (e) {
+        console.log('Could not fetch options, using results only');
+    }
+    
+    // Merge options with results, adding 0 votes for missing options
+    const resultMap = {};
+    results.forEach(r => {
+        resultMap[r.option] = r;
+    });
+    
+    const mergedResults = allOptions.map(opt => {
+        const existing = resultMap[opt.option_text];
+        return existing || {
+            option: opt.option_text,
+            count: 0,
+            percentage: 0
+        };
+    });
+    
+    // If no options from API, use results
+    const displayResults = mergedResults.length > 0 ? mergedResults : results;
+    
+    if (totalVotes === 0 && displayResults.length === 0) {
+        container.innerHTML = `
+            <div class="no-votes-message">
+                <p>Vote ended - No votes were cast</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort by count (descending) but keep all options
+    const sorted = [...displayResults].sort((a, b) => (b.count || 0) - (a.count || 0));
+    const maxCount = Math.max(...sorted.map(r => r.count || 0), 1);
+    
+    container.innerHTML = `
+        <div class="vote-results choice-results">
+            <div class="results-header">
+                <span class="total-votes">${totalVotes} votes</span>
+            </div>
+            <div class="simple-chart">
+                ${sorted.map(r => {
+                    const pct = r.percentage || 0;
+                    const barWidth = maxCount > 0 ? ((r.count || 0) / maxCount * 100) : 0;
+                    return `
+                        <div class="simple-bar-row">
+                            <div class="simple-bar-label">
+                                <span class="option-name">${r.option}</span>
+                                <span class="vote-stats">${r.count || 0} votes (${pct.toFixed(1)}%)</span>
+                            </div>
+                            <div class="simple-bar-bg">
+                                <div class="simple-bar-fill" style="width: ${barWidth}%">
+                                    ${barWidth > 15 ? `<span>${pct.toFixed(0)}%</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Setup vote end timers
+function setupVoteEndTimers() {
+    document.querySelectorAll('.vote-card').forEach(card => {
+        const header = card.querySelector('.card-header');
+        if (!header?.dataset.endDate || !header?.dataset.voteId) return;
+        
+        const endDate = new Date(header.dataset.endDate);
+        const voteId = header.dataset.voteId;
+        const timeLeft = endDate - new Date();
+        
+        if (timeLeft > 0) {
+            // Schedule counting when vote ends
+            setTimeout(() => countVotesAndShowResults(voteId), timeLeft);
+        } else {
+            // Vote already ended, count now
+            countVotesAndShowResults(voteId);
+        }
+    });
+}
+
+// Check if vote ended and show results
+function checkAndShowResults(card, voteId) {
+    const header = card.querySelector('.card-header');
+    if (!header?.dataset.endDate) return;
+    
+    const endDate = new Date(header.dataset.endDate);
+    if (new Date() > endDate && !card.querySelector('.results-container')?.dataset.loaded) {
+        countVotesAndShowResults(voteId);
+    }
+}
+
+// Load vote options for choice votes
+async function loadVoteOptions(voteId) {
+    const optionsContainer = document.getElementById(`options-${voteId}`);
+    if (!optionsContainer || optionsContainer.dataset.loaded) return;
+    
+    try {
+        const response = await fetch(`/api/votes/${voteId}/options`);
+        const data = await response.json();
+        
+        if (data.options && data.options.length > 0) {
+            optionsContainer.innerHTML = data.options.map(opt => `
+                <label class="vote-option-label">
+                    <input type="radio" name="choice" value="${opt.id}" required>
+                    <span>${opt.option_text}</span>
+                </label>
+            `).join('');
+            optionsContainer.dataset.loaded = 'true';
+        } else {
+            optionsContainer.innerHTML = '<p class="loading-options">No options available</p>';
+        }
+    } catch (error) {
+        optionsContainer.innerHTML = '<p class="loading-options">Failed to load options</p>';
+    }
+}
+
+// Load vote results
+async function loadVoteResults(voteId) {
+    const resultsContainer = document.getElementById(`results-${voteId}`);
+    if (!resultsContainer || resultsContainer.dataset.loaded) return;
+    
+    // Show professional loading state
+    resultsContainer.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+            <div style="display: inline-block; padding: 1rem 2rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <div style="width: 40px; height: 40px; border: 3px solid #007bff; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="margin: 1rem 0 0 0; color: #6c757d; font-weight: 500;">Counting votes...</p>
+            </div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+    
+    try {
+        const response = await fetch(`/api/votes/${voteId}/results`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            resultsContainer.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #1a1a1a; font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600;">Vote Results</h4>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border: 1px solid #e9ecef;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e9ecef;">
+                            <span style="font-weight: 600; color: #495057;">Total Votes:</span>
+                            <span style="color: #007bff; font-weight: 600; font-size: 1.2rem;">${data.total_votes || 0}</span>
+                        </div>
+                        ${data.results.map(r => `
+                            <div style="margin: 1rem 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 500; color: #495057;">${r.option || 'Rating ' + r.value}</span>
+                                    <span style="color: #6c757d; font-size: 0.9rem;">${r.count} votes</span>
+                                </div>
+                                <div style="background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div style="background: #007bff; height: 100%; width: ${r.percentage || 0}%; transition: width 0.8s ease;"></div>
+                                </div>
+                                <div style="text-align: right; margin-top: 0.25rem;">
+                                    <span style="color: #28a745; font-weight: 600; font-size: 0.9rem;">${r.percentage || 0}%</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            resultsContainer.dataset.loaded = 'true';
+        } else {
+            resultsContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; border: 1px solid #f5c6cb;">
+                        <p style="margin: 0; font-weight: 500;">No votes have been cast yet.</p>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        resultsContainer.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; border: 1px solid #f5c6cb;">
+                    <p style="margin: 0; font-weight: 500;">Unable to load results.</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Sync rating slider to text input
+function syncRatingInput(voteId) {
+    const slider = document.getElementById(`rating-${voteId}`);
+    const valueInput = document.getElementById(`rating-value-${voteId}`);
+    const thumb = document.getElementById(`rating-thumb-${voteId}`);
+    
+    if (slider && valueInput) {
+        const value = parseFloat(slider.value).toFixed(3);
+        valueInput.value = value;
+        
+        if (thumb) {
+            thumb.textContent = value;
+            const percent = (value / 10) * 100;
+            thumb.style.left = percent + '%';
+        }
+        
+        // Update mark colors
+        const marks = slider.closest('.rating-line').querySelectorAll('.mark');
+        marks.forEach(mark => {
+            const markValue = parseInt(mark.dataset.value);
+            if (markValue <= value) {
+                mark.style.color = '#007bff';
+                mark.style.fontWeight = 'bold';
+            } else {
+                mark.style.color = '#666';
+                mark.style.fontWeight = 'normal';
+            }
+        });
+    }
+}
+
+// Sync text input to rating slider
+function syncRatingSlider(voteId) {
+    const slider = document.getElementById(`rating-${voteId}`);
+    const valueInput = document.getElementById(`rating-value-${voteId}`);
+    const thumb = document.getElementById(`rating-thumb-${voteId}`);
+    
+    if (slider && valueInput) {
+        let value = parseFloat(valueInput.value);
+        if (isNaN(value)) value = 0;
+        if (value < 0) value = 0;
+        if (value > 10) value = 10;
+        
+        slider.value = value;
+        
+        if (thumb) {
+            thumb.textContent = value.toFixed(3);
+            const percent = (value / 10) * 100;
+            thumb.style.left = percent + '%';
+        }
+        
+        // Update mark colors
+        const marks = slider.closest('.rating-line').querySelectorAll('.mark');
+        marks.forEach(mark => {
+            const markValue = parseInt(mark.dataset.value);
+            if (markValue <= value) {
+                mark.style.color = '#007bff';
+                mark.style.fontWeight = 'bold';
+            } else {
+                mark.style.color = '#666';
+                mark.style.fontWeight = 'normal';
+            }
+        });
+    }
+}
+
+// Handle inline vote form submission
+document.addEventListener('submit', async function(e) {
+    const form = e.target.closest('.inline-vote-form');
+    if (!form) return;
+    
+    e.preventDefault();
+    
+    const voteId = form.dataset.voteId;
+    const voteType = form.dataset.voteType;
+    const resultDiv = document.getElementById(`result-${voteId}`);
+    
+    const formData = new FormData(form);
+    const n1Code = formData.get('n1_code');
+    const n2Code = formData.get('n2_code');
+    const choice = formData.get('choice');
+    
+    if (!choice) {
+        resultDiv.className = 'vote-result error';
+        resultDiv.textContent = 'Please select an option or rating';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/votes/${voteId}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                n1_code: n1Code,
+                n2_code: n2Code,
+                vote_choice: choice
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultDiv.className = 'vote-result success';
+            resultDiv.textContent = 'Vote submitted successfully!';
+            form.reset();
+        } else {
+            resultDiv.className = 'vote-result error';
+            resultDiv.textContent = data.error || 'Failed to submit vote';
+        }
+    } catch (error) {
+        resultDiv.className = 'vote-result error';
+        resultDiv.textContent = 'Network error. Please try again.';
+    }
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}About - Electronic Voting System{% endblock %}
+
+{% block content %}
+<style>
+.about-wrapper {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.about-header h1 {
+    color: #41431B;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.about-header p {
+    color: #AEB784;
+    font-size: 1.1rem;
+}
+
+.about-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(65, 67, 27, 0.08);
+    border: 1px solid #E3DBBB;
+}
+
+.about-section h2 {
+    color: #41431B;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.about-section h2::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: #AEB784;
+    border-radius: 2px;
+}
+
+.about-section p {
+    color: #555;
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+.team-split {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Manager - Full width, simple, no avatar */
+.team-lead {
+    padding: 1.25rem 1.5rem;
+    background: #41431B;
+    border-radius: 12px;
+}
+
+.team-lead h3 {
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 0.15rem;
+}
+
+.team-lead-role {
+    color: #AEB784;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.team-lead p {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-top: 0.5rem;
+}
+
+/* 2x2 Grid - compact squares, dark like manager */
+.team-quad {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.team-box {
+    padding: 1.25rem;
+    background: #41431B;
+    border-radius: 10px;
+}
+
+.team-box-title {
+    margin-bottom: 0.75rem;
+}
+
+.team-box-title h3 {
+    color: white;
+    font-size: 0.95rem;
+    margin-bottom: 0.15rem;
+}
+
+.team-box-role {
+    color: #AEB784;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.team-box p {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.tech-tag {
+    background: #41431B;
+    color: #F8F3E1;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.purpose-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.purpose-item {
+    background: #F8F3E1;
+    padding: 1.25rem;
+    border-radius: 12px;
+    border-left: 4px solid #AEB784;
+}
+
+.purpose-item h3 {
+    color: #41431B;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.purpose-item p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+</style>
+
+<div class="about-wrapper">
+    <div class="about-header">
+        <h1>About Us</h1>
+        <p>Electronic Voting System</p>
+    </div>
+
+    <div class="about-section">
+        <h2>Who We Are</h2>
+        <p>We are a group of five third-year engineering students at ENSTA Alger, specializing in Artificial Intelligence and Security Systems. This project is part of our Cryptology course under the supervision of Mrs. Souad KHERROUBI.</p>
+    </div>
+
+    <div class="about-section">
+        <h2>Project Goal</h2>
+        <p>Create a secure, anonymous, and verifiable electronic voting system based on the blind signature protocol studied in class. The system guarantees:</p>
+        
+        <div class="purpose-grid">
+            <div class="purpose-item">
+                <h3>Voter Anonymity</h3>
+                <p>No single entity can link a vote to its voter.</p>
+            </div>
+            <div class="purpose-item">
+                <h3>Vote Integrity</h3>
+                <p>Every ballot is signed blindly by an administrator and encrypted for a counter, with TTH integrity checks.</p>
+            </div>
+            <div class="purpose-item">
+                <h3>Double-Voting Prevention</h3>
+                <p>The commissioner marks each voter's N1 code as used.</p>
+            </div>
+            <div class="purpose-item">
+                <h3>End-to-End Verifiability</h3>
+                <p>Voters can later check that their N2 code appears in the published results.</p>
+            </div>
+            <div class="purpose-item">
+                <h3>Universal Verifiability</h3>
+                <p>Anyone can independently verify that all votes were counted correctly.</p>
+            </div>
+            <div class="purpose-item">
+                <h3>Eligibility Verifiability</h3>
+                <p>Only registered voters with valid credentials can cast votes in the election.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Our Team & Responsibilities</h2>
+        <div class="team-split">
+            <div class="team-lead">
+                <h3>ABBA ABDELDJABBAR</h3>
+                <span class="team-lead-role">Project Manager & Integrator</span>
+                <p>Responsible for the overall architecture, GitHub repository management, code integration, deployment, and ensuring all modules work together. Also handles the core business logic (vote processing, tallying, creator workflows, configuration).</p>
+            </div>
+            <div class="team-quad">
+                <div class="team-box">
+                    <div class="team-box-title">
+                        <h3>OINTEN Mohamad Amine</h3>
+                        <span class="team-box-role">Database Specialist</span>
+                    </div>
+                    <p>Designs and maintains the Supabase schema (votes, voters, encrypted ballots, etc.), writes all CRUD operations in database/queries.py, ensures data integrity, and optimises queries for performance.</p>
+                </div>
+                <div class="team-box">
+                    <div class="team-box-title">
+                        <h3>BENABED Farouk</h3>
+                        <span class="team-box-role">Cryptography Engineer</span>
+                    </div>
+                    <p>Implements RSA key generation, blind signatures, Tiger Tree Hash (TTH), code generation (N1, N2, creator codes), and all cryptographic utilities in the crypto/ module. Ensures the security of the voting protocol.</p>
+                </div>
+                <div class="team-box">
+                    <div class="team-box-title">
+                        <h3>BELAHRAUI Abderrahman</h3>
+                        <span class="team-box-role">Web Frontend Developer</span>
+                    </div>
+                    <p>Builds the Flask web interface: routes, templates (base, index, vote, create vote, results, about, contact), static CSS/JS, and ensures a responsive, user-friendly experience with interactive vote cards and modals.</p>
+                </div>
+                <div class="team-box">
+                    <div class="team-box-title">
+                        <h3>HOUACHE Hamo</h3>
+                        <span class="team-box-role">Email & Communication Module</span>
+                    </div>
+                    <p>Integrates SMTP email sending for voter codes (N1, N2) and confirmations. Manages email templates in the email/ folder and ensures reliable delivery of voting credentials.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Technologies Used</h2>
+        <div class="tech-tags">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Flask</span>
+            <span class="tech-tag">Flask-WTF</span>
+            <span class="tech-tag">Supabase (PostgreSQL)</span>
+            <span class="tech-tag">cryptography library (RSA, blind signatures)</span>
+            <span class="tech-tag">Tiger Tree Hash</span>
+            <span class="tech-tag">HTML5/CSS3/JavaScript</span>
+            <span class="tech-tag">SMTP (Gmail)</span>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Acknowledgments</h2>
+        <p>We thank Mrs. Kherroubi for her guidance and for introducing us to the fascinating world of cryptographic protocols. This project is submitted in partial fulfillment of the Cryptology module, academic year 2025/2026.</p>
+    </div>
+</div>
+{% endblock %}

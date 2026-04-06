@@ -1,3 +1,0 @@
-templates/email_template.txt
-Member 5: Plain text email template
-Use the same variables: {election_title}, {election_id}, {n1_code}, {n2_code}

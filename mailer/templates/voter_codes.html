@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #41431B; 
+            background: #F8F3E1;
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .container { 
+            background: #ffffff; 
+            border-radius: 12px; 
+            padding: 30px; 
+            border: 2px solid #E3DBBB;
+            box-shadow: 0 2px 8px rgba(65, 67, 27, 0.12);
+        }
+        .header { 
+            background: linear-gradient(135deg, #41431B 0%, #AEB784 100%); 
+            color: #F8F3E1; 
+            padding: 24px; 
+            border-radius: 8px; 
+            text-align: center; 
+            margin-bottom: 24px; 
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .code-box { 
+            background: #F8F3E1; 
+            border: 2px solid #AEB784; 
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: center; 
+            margin: 20px 0; 
+        }
+        .code { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #41431B; 
+            font-family: 'Courier New', monospace; 
+            letter-spacing: 2px; 
+        }
+        .vote-link-box { 
+            background: #41431B; 
+            color: #F8F3E1; 
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: center; 
+            margin: 20px 0; 
+        }
+        .vote-link-box a { 
+            color: #F8F3E1; 
+            text-decoration: underline; 
+            font-weight: bold; 
+        }
+        .footer { 
+            margin-top: 30px; 
+            padding-top: 20px; 
+            border-top: 1px solid #E3DBBB; 
+            font-size: 0.9em; 
+            color: #AEB784; 
+            text-align: center; 
+        }
+        .footer .brand {
+            color: #41431B;
+            font-weight: 600;
+        }
+        .important-note {
+            background: #F8F3E1;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #AEB784;
+            font-size: 0.9em;
+            color: #41431B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Your Voting Codes</h2>
+        </div>
+        
+        <p>Hello,</p>
+        
+        <p>You have been invited to participate in: <strong style="color: #41431B;">{vote_title}</strong></p>
+        
+        <div class="vote-link-box">
+            <p style="margin: 0 0 10px 0; font-size: 0.9em;">Click here to vote:</p>
+            <a href="{vote_link}" style="font-size: 1.1em; word-break: break-all;">{vote_link}</a>
+        </div>
+        
+        <div class="code-box">
+            <p style="margin: 0 0 10px 0; font-size: 0.9em; color: #AEB784; font-weight: 600;">N1 Code (Voter ID):</p>
+            <div class="code">{n1_code}</div>
+        </div>
+        
+        <div class="code-box">
+            <p style="margin: 0 0 10px 0; font-size: 0.9em; color: #AEB784; font-weight: 600;">N2 Code (Ballot ID):</p>
+            <div class="code">{n2_code}</div>
+        </div>
+        
+        <p><strong style="color: #41431B;">How to vote:</strong></p>
+        <ol style="color: #41431B;">
+            <li>Visit the voting website</li>
+            <li>Enter your N1 and N2 codes</li>
+            <li>Cast your vote</li>
+        </ol>
+        
+        <p class="important-note">
+            <strong>Important:</strong> Keep these codes private. Each code can only be used once.
+        </p>
+        
+        <div class="footer">
+            <p>Thank you for participating!</p>
+            <p class="brand">SecureVote</p>
+        </div>
+    </div>
+</body>
+</html>

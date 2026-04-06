@@ -1,0 +1,30 @@
+═══════════════════════════════════════════════════════════════
+                      SECUREVOTE - VOTE CONFIRMATION
+═══════════════════════════════════════════════════════════════
+
+Hello,
+
+Your vote has been successfully recorded
+
+Vote: {vote_title}
+───────────────────────────────────────────────────────────────
+
+Your Choice:    {vote_choice}
+Time Submitted: {timestamp}
+Status:         CONFIRMED
+
+───────────────────────────────────────────────────────────────
+
+SECURITY NOTES:
+• Your vote has been encrypted and securely stored
+• Your identity remains anonymous through the N1/N2 code system
+• Your vote cannot be traced back to you
+• This confirmation is for your records only
+
+Thank you for your participation!
+SecureVote - Electronic Voting System
+
+───────────────────────────────────────────────────────────────
+If you did not cast this vote, please contact the election
+administrator immediately.
+═══════════════════════════════════════════════════════════════

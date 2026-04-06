@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Results - {{ vote.title }}{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="padding: 2rem;">
+    <h1>Vote Results</h1>
+    <h2>{{ vote.title }}</h2>
+    <p>{{ vote.description }}</p>
+</div>
+
+<div class="container">
+    <div class="results-container">
+        <div id="results-display" class="results-display">
+            <div class="results-loading">
+                <p>Loading results...</p>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">&larr; Back to All Votes</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load and display results immediately
+document.addEventListener('DOMContentLoaded', async function() {
+    const voteId = '{{ vote.id }}';
+    const voteType = '{{ vote.vote_type }}';
+    
+    try {
+        const response = await fetch(`/api/votes/${voteId}/results`);
+        const data = await response.json();
+        
+        if (data.error) {
+            document.getElementById('results-display').innerHTML = 
+                '<p class="error">Error: ' + data.error + '</p>';
+            return;
+        }
+        
+        displayResults(data, voteType);
+    } catch (error) {
+        document.getElementById('results-display').innerHTML = 
+            '<p class="error">Error: ' + error.message + '</p>';
+    }
+});
+
+function displayResults(data, voteType) {
+    const container = document.getElementById('results-display');
+    const results = data.results || {};
+    const totalVotes = data.vote_info?.total_votes || 0;
+    
+    if (totalVotes === 0) {
+        container.innerHTML = `
+            <div class="no-votes">
+                <h3>No votes yet</h3>
+                <p>Results will appear here once votes are cast.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="results-header">
+            <h3>Live Results</h3>
+            <span class="total-votes">Total Votes: ${totalVotes}</span>
+        </div>
+    `;
+    
+    if (voteType === 'rating') {
+        let totalRating = 0;
+        let voteCount = 0;
+        
+        for (const [rating, count] of Object.entries(results)) {
+            totalRating += parseFloat(rating) * count;
+            voteCount += count;
+        }
+        
+        const average = voteCount > 0 ? (totalRating / voteCount).toFixed(1) : 0;
+        
+        html += `
+            <div class="rating-stats">
+                <div class="rating-average">
+                    <div class="rating-value">${average}</div>
+                    <div class="rating-label">Average Rating (out of 10)</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '<div class="results-chart">';
+    
+    const sortedResults = Object.entries(results).sort((a, b) => b[1] - a[1]);
+    const maxCount = Math.max(...Object.values(results));
+    
+    for (const [choice, count] of sortedResults) {
+        const percentage = maxCount > 0 ? (count / totalVotes * 100).toFixed(1) : 0;
+        const barWidth = maxCount > 0 ? (count / maxCount * 100) : 0;
+        
+        html += `
+            <div class="result-bar">
+                <div class="result-label">${choice}</div>
+                <div class="result-bar-container">
+                    <div class="result-bar-fill" style="width: ${barWidth}%">
+                        <span class="result-bar-value">${percentage}%</span>
+                    </div>
+                </div>
+                <div class="result-count">${count} votes</div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+</script>
+
+<style>
+.results-display {
+    margin: 30px 0;
+}
+
+.results-loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+.total-votes {
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.result-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.result-label {
+    width: 150px;
+    font-weight: 500;
+    text-align: right;
+    padding-right: 15px;
+}
+
+.result-bar-container {
+    flex: 1;
+    height: 40px;
+    background: #f0f0f0;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.result-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border-radius: 20px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+}
+
+.result-bar-value {
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.result-count {
+    margin-left: 15px;
+    color: #666;
+    font-size: 14px;
+    min-width: 60px;
+}
+
+.no-votes {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.rating-stats {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.rating-average {
+    text-align: center;
+}
+
+.rating-value {
+    font-size: 48px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.rating-label {
+    color: #666;
+    margin-top: 10px;
+}
+
+.vote-meta {
+    margin-top: 15px;
+}
+
+.status-badge, .type-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.ended {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.type-badge {
+    background: #e7f3ff;
+    color: #004085;
+}
+</style>
+{% endblock %}

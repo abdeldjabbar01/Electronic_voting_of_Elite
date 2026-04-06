@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Electronic Voting System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script>
+    {% block head %}{% endblock %}
+    <style>
+        /* Navbar login button */
+        .btn-login {
+            background: #41431B;
+            color: #F8F3E1;
+            border: 2px solid #AEB784;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-login:hover {
+            background: #AEB784;
+            color: #41431B;
+        }
+        
+        .btn-login.logged-in {
+            background: #AEB784;
+            color: #41431B;
+        }
+
+        /* Login Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(65, 67, 27, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .login-modal {
+            background: #F8F3E1;
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(65, 67, 27, 0.3);
+            position: relative;
+            animation: slideUp 0.4s ease;
+            border: 2px solid #E3DBBB;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #41431B;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #E3DBBB;
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            color: #41431B;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .modal-subtitle {
+            color: #AEB784;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .login-form label {
+            display: block;
+            color: #41431B;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 2px solid #E3DBBB;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s;
+            color: #41431B;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: #41431B;
+        }
+        
+        .login-form input::placeholder {
+            color: #AEB784;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: #41431B;
+            color: #F8F3E1;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-submit:hover {
+            background: #AEB784;
+            color: #41431B;
+        }
+        
+        .login-message {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .login-message.success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+        
+        .login-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+        
+        .login-info {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #E3DBBB;
+            font-size: 0.85rem;
+            color: #AEB784;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #41431B 0%, #AEB784 100%);
+            background-size: cover;
+            background-position: center;
+            padding: 2rem 1rem;
+            text-align: center;
+            color: #F8F3E1;
+            margin-bottom: 1rem;
+        }
+        .hero-section h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .hero-section p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="{{ url_for('index') }}">Electronic Voting System</a>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('about') }}">About</a>
+            <a href="{{ url_for('contact') }}">Contact</a>
+            <button id="loginBtn" class="btn-login">Sign In</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="alert">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="login-modal">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <h2 class="modal-title">Welcome Back</h2>
+            <p class="modal-subtitle">Sign in with your voter email</p>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" name="email" placeholder="your@email.com" required>
+                </div>
+                
+                <button type="submit" class="btn-submit">Sign In</button>
+            </form>
+            
+            <div class="login-message" id="loginMessage"></div>
+            
+            <div class="login-info">
+                <p>Enter the email you used when registering as a voter.</p>
+                <p>You'll be able to see votes assigned to you.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Login Modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginModal = document.getElementById('loginModal');
+            const closeModal = document.getElementById('closeModal');
+            const loginForm = document.getElementById('loginForm');
+            const loginMessage = document.getElementById('loginMessage');
+            
+            // Check if user is already logged in
+            const loggedInEmail = sessionStorage.getItem('voterEmail');
+            if (loggedInEmail) {
+                loginBtn.textContent = loggedInEmail;
+                loginBtn.classList.add('logged-in');
+            }
+            
+            // Open modal
+            loginBtn.addEventListener('click', function() {
+                if (loggedInEmail) {
+                    // Log out
+                    sessionStorage.removeItem('voterEmail');
+                    loginBtn.textContent = 'Sign In';
+                    loginBtn.classList.remove('logged-in');
+                    window.location.reload();
+                } else {
+                    loginModal.classList.add('active');
+                }
+            });
+            
+            // Close modal
+            closeModal.addEventListener('click', function() {
+                loginModal.classList.remove('active');
+            });
+            
+            // Close on backdrop click
+            loginModal.addEventListener('click', function(e) {
+                if (e.target === loginModal) {
+                    loginModal.classList.remove('active');
+                }
+            });
+            
+            // Handle form submission
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('loginEmail').value.trim();
+                
+                try {
+                    const response = await fetch('/api/auth/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        sessionStorage.setItem('voterEmail', email);
+                        loginMessage.className = 'login-message success';
+                        loginMessage.textContent = 'Login successful!';
+                        
+                        setTimeout(() => {
+                            loginModal.classList.remove('active');
+                            loginBtn.textContent = email;
+                            loginBtn.classList.add('logged-in');
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        loginMessage.className = 'login-message error';
+                        loginMessage.textContent = data.error || 'Email not found. Please check your registration.';
+                    }
+                } catch (error) {
+                    loginMessage.className = 'login-message error';
+                    loginMessage.textContent = 'Network error. Please try again.';
+                }
+            });
+        });
+    </script>
+
+    <footer class="footer">
+        <p>&copy;</p>
+    </footer>
+</body>
+</html>

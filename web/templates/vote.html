@@ -1,0 +1,548 @@
+{% extends "base.html" %}
+
+{% block title %}Vote - {{ vote.title }}{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="padding: 2rem;">
+    <h1>{{ vote.title }}</h1>
+    <p class="vote-description">{{ vote.description or 'No description provided' }}</p>
+    
+    <div class="vote-meta-bar">
+        <span class="meta-item"><strong>Vote ID:</strong> {{ vote.id }}</span>
+        <span class="meta-item"><strong>Created:</strong> {{ vote.created_at.strftime('%Y-%m-%d %H:%M') if vote.created_at else 'Unknown' }}</span>
+        <span class="meta-item"><strong>Type:</strong> {{ "Choice Vote" if vote.vote_type == 'choice' else "Rating Vote" }}</span>
+        {% if vote.is_active and vote.end_date %}
+        <span class="meta-item countdown-item">
+            <strong>Ends in:</strong> 
+            <span class="countdown-timer" data-end="{{ vote.end_date.isoformat() }}">--:--:--</span>
+        </span>
+        {% elif vote.end_date %}
+        <span class="meta-item ended-item">
+            <strong>Ended:</strong> {{ vote.end_date.strftime('%Y-%m-%d %H:%M') }}
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="vote-detail">
+
+        {% if vote.is_active %}
+        <div class="vote-form-container">
+            <h2>Cast Your Vote</h2>
+            <p class="vote-instructions">
+                Enter your N1 and N2 codes that you received via email to vote.
+            </p>
+            <form id="vote-form" class="vote-form" data-vote-id="{{ vote.id }}">
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="n1-code">N1 Code (Voter ID)</label>
+                        <input type="text" id="n1-code" name="n1_code" required minlength="12" maxlength="12"
+                               placeholder="12-character code">
+                        <small>Your identity verification code</small>
+                    </div>
+                    <div class="form-group half">
+                        <label for="n2-code">N2 Code (Ballot ID)</label>
+                        <input type="text" id="n2-code" name="n2_code" required minlength="12" maxlength="12"
+                               placeholder="12-character code">
+                        <small>Your ballot authentication code</small>
+                    </div>
+                </div>
+
+                {% if vote.vote_type == 'choice' %}
+                <div class="form-group">
+                    <label>Select Your Choice</label>
+                    <div class="options-list">
+                        {% for option in options %}
+                        <label class="option-item">
+                            <input type="radio" name="vote_choice" value="{{ option.option_text }}" required>
+                            <span class="option-text">{{ option.option_text }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="form-group">
+                    <label for="rating">Your Rating (0-10)</label>
+                    <div class="rating-slider-container">
+                        <div class="rating-line">
+                            <div class="rating-marks">
+                                <span class="mark" data-value="0">0</span>
+                                <span class="mark" data-value="1">1</span>
+                                <span class="mark" data-value="2">2</span>
+                                <span class="mark" data-value="3">3</span>
+                                <span class="mark" data-value="4">4</span>
+                                <span class="mark" data-value="5">5</span>
+                                <span class="mark" data-value="6">6</span>
+                                <span class="mark" data-value="7">7</span>
+                                <span class="mark" data-value="8">8</span>
+                                <span class="mark" data-value="9">9</span>
+                                <span class="mark" data-value="10">10</span>
+                            </div>
+                            <input type="range" id="rating" min="0" max="10" step="0.001" value="5">
+                            <div class="rating-thumb" id="rating-thumb">5.000</div>
+                        </div>
+                        <div class="rating-labels">
+                            <span class="label-low">Poor</span>
+                            <span class="label-mid">Average</span>
+                            <span class="label-high">Excellent</span>
+                        </div>
+                        <div class="rating-input-row" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                            <label style="margin: 0; font-weight: 500;">Selected Value:</label>
+                            <input type="number" id="rating-value" name="vote_choice" min="0" max="10" step="0.001" value="5.000" style="width: 80px; text-align: center;" required>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary btn-large">Submit Vote</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="vote-ended-notice">
+            <p>This vote has ended. You can no longer submit votes.</p>
+            <a href="{{ url_for('results_page', vote_id=vote.id) }}" class="btn btn-secondary">View Results</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.vote-form-container {
+    padding: 20px;
+    margin-bottom: 40px;
+}
+
+.vote-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.vote-form .btn-primary {
+    margin-top: 20px;
+    align-self: flex-start;
+}
+
+.rating-slider-container {
+    background: #F8F3E1;
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid #E3DBBB;
+    margin: 15px 0;
+}
+
+.rating-line {
+    position: relative;
+    height: 40px;
+    margin: 10px 0 20px 0;
+}
+
+.rating-marks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
+}
+
+.mark {
+    font-size: 12px;
+    color: #41431B;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+#rating {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: #E3DBBB;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+#rating::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #41431B;
+    border: 2px solid #F8F3E1;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#rating::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #41431B;
+    border: 2px solid #F8F3E1;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rating-thumb {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    background: #41431B;
+    color: #F8F3E1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.rating-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
+    font-size: 12px;
+    color: #41431B;
+}
+
+.rating-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #E3DBBB;
+}
+
+.rating-input-row label {
+    margin: 0;
+    font-weight: 500;
+    color: #41431B;
+    font-size: 14px;
+}
+
+.rating-input-row input[type="number"] {
+    width: 80px;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #E3DBBB;
+    border-radius: 6px;
+    color: #41431B;
+}
+
+.rating-input-row input[type="number"]:focus {
+    outline: none;
+    border-color: #41431B;
+}
+
+.vote-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.vote-success h3 {
+    color: #155724;
+    margin-bottom: 15px;
+}
+
+.vote-success p {
+    color: #155724;
+    margin-bottom: 10px;
+}
+
+.vote-success .btn {
+    margin-top: 15px;
+}
+
+/* Vote Meta Bar Styles */
+.vote-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0.5rem 0 1rem 0;
+    max-width: 800px;
+}
+
+.vote-meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.meta-item {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.meta-item strong {
+    color: var(--text-primary);
+    margin-right: 0.3rem;
+}
+
+.countdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.8rem;
+    background: #fef3c7;
+    border-radius: 6px;
+}
+
+.countdown-timer {
+    color: #92400e;
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.ended-item {
+    color: #dc2626;
+    font-weight: 500;
+}
+</style>
+
+<script>
+// Test if JavaScript is running - show on page
+window.addEventListener('load', function() {
+    const debugDiv = document.createElement('div');
+    debugDiv.id = 'debug-info';
+    debugDiv.style.cssText = 'background: yellow; padding: 10px; margin: 10px; border: 2px solid red; font-family: monospace;';
+    debugDiv.innerHTML = '<strong>DEBUG INFO:</strong><br>';
+    
+    const voteForm = document.getElementById('vote-form');
+    const n1Input = document.getElementById('n1-code');
+    const n2Input = document.getElementById('n2-code');
+    const ratingInput = document.getElementById('rating-value');
+    
+    debugDiv.innerHTML += `Vote Form: ${voteForm ? 'FOUND' : 'NOT FOUND'}<br>`;
+    debugDiv.innerHTML += `N1 Input: ${n1Input ? 'FOUND' : 'NOT FOUND'}<br>`;
+    debugDiv.innerHTML += `N2 Input: ${n2Input ? 'FOUND' : 'NOT FOUND'}<br>`;
+    debugDiv.innerHTML += `Rating Input: ${ratingInput ? 'FOUND' : 'NOT FOUND'}<br>`;
+    
+    // Insert at the top of the page
+    document.body.insertBefore(debugDiv, document.body.firstChild);
+});
+
+// Rating slider functionality with synced text input
+const ratingInput = document.getElementById('rating');
+const ratingThumb = document.getElementById('rating-thumb');
+const marks = document.querySelectorAll('.mark');
+const ratingValueInput = document.getElementById('rating-value');
+
+if (ratingInput && ratingThumb) {
+    function updateRatingDisplay() {
+        const value = parseFloat(ratingInput.value).toFixed(3);
+        const percent = (value / 10) * 100;
+        ratingThumb.textContent = value;
+        ratingThumb.style.left = percent + '%';
+        
+        // Sync text input
+        if (ratingValueInput) {
+            ratingValueInput.value = value;
+        }
+        
+        // Update mark colors
+        marks.forEach(mark => {
+            const markValue = parseInt(mark.dataset.value);
+            if (markValue <= value) {
+                mark.style.color = '#007bff';
+                mark.style.fontWeight = 'bold';
+            } else {
+                mark.style.color = '#666';
+                mark.style.fontWeight = 'normal';
+            }
+        });
+    }
+    
+    // Slider changes update text input
+    ratingInput.addEventListener('input', updateRatingDisplay);
+    
+    // Text input changes update slider
+    if (ratingValueInput) {
+        ratingValueInput.addEventListener('input', function() {
+            let value = parseFloat(this.value);
+            if (isNaN(value)) value = 0;
+            if (value < 0) value = 0;
+            if (value > 10) value = 10;
+            
+            ratingInput.value = value;
+            updateRatingDisplay();
+        });
+    }
+    
+    // Click on marks to set value
+    marks.forEach(mark => {
+        mark.addEventListener('click', function() {
+            ratingInput.value = this.dataset.value;
+            updateRatingDisplay();
+        });
+    });
+    
+    // Initialize display
+    updateRatingDisplay();
+}
+
+// Countdown timer for vote page
+function updateVoteCountdown() {
+    const timer = document.querySelector('.countdown-timer');
+    if (!timer) return;
+    
+    const endDate = timer.dataset.end;
+    if (!endDate) {
+        timer.textContent = 'No end date';
+        return;
+    }
+    
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end - now;
+    
+    if (diff <= 0) {
+        timer.textContent = 'Ended';
+        timer.style.color = '#dc2626';
+        return;
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    if (days > 0) {
+        timer.textContent = `${days}d ${hours}h ${minutes}m`;
+    } else {
+        timer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+// Update countdown every second
+setInterval(updateVoteCountdown, 1000);
+updateVoteCountdown(); // Initial call
+
+// Vote submission
+document.getElementById('vote-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    console.log("=== VOTE SUBMISSION DEBUG ===");
+    
+    const voteForm = document.getElementById('vote-form');
+    const voteId = voteForm.getAttribute('data-vote-id');
+    console.log("Vote ID from form:", voteId);
+    
+    // Get N1 and N2 codes
+    const n1Input = document.getElementById('n1-code');
+    const n2Input = document.getElementById('n2-code');
+    
+    console.log("N1 input element:", n1Input);
+    console.log("N2 input element:", n2Input);
+    
+    const n1_code = n1Input ? n1Input.value.trim() : 'NOT_FOUND';
+    const n2_code = n2Input ? n2Input.value.trim() : 'NOT_FOUND';
+    
+    console.log("N1 raw value:", n1Input ? n1Input.value : 'NO_ELEMENT');
+    console.log("N2 raw value:", n2Input ? n2Input.value : 'NO_ELEMENT');
+    console.log("N1 trimmed:", n1_code);
+    console.log("N2 trimmed:", n2_code);
+    
+    // Get vote choice - handle both choice (radio) and rating (number) types
+    let vote_choice = '';
+    
+    // Try to get radio button selection (choice votes)
+    const selectedRadio = document.querySelector('input[name="vote_choice"]:checked');
+    console.log("Radio buttons found:", document.querySelectorAll('input[name="vote_choice"]'));
+    console.log("Selected radio:", selectedRadio);
+    
+    if (selectedRadio) {
+        vote_choice = selectedRadio.value;
+        console.log("Got vote choice from radio:", vote_choice);
+    } else {
+        // Try to get number input (rating votes)
+        const ratingInput = document.getElementById('rating-value');
+        console.log("Rating input element:", ratingInput);
+        
+        if (ratingInput) {
+            vote_choice = ratingInput.value;
+            console.log("Rating input raw value:", ratingInput.value);
+            console.log("Got vote choice from rating:", vote_choice);
+        } else {
+            console.log("No rating input found!");
+        }
+    }
+    
+    console.log("Final values:", { n1_code, n2_code, vote_choice });
+    
+    // Validate inputs
+    if (!n1_code || !n2_code || !vote_choice) {
+        alert('Please fill in all fields:\nN1: ' + (n1_code || 'EMPTY') + '\nN2: ' + (n2_code || 'EMPTY') + '\nChoice: ' + (vote_choice || 'EMPTY'));
+        return;
+    }
+    
+    if (n1_code.length !== 12 || n2_code.length !== 12) {
+        alert(' N1 and N2 codes must be exactly 12 characters');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = voteForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/votes/${voteId}/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                n1_code: n1_code,
+                n2_code: n2_code,
+                vote_choice: vote_choice
+            })
+        });
+        
+        console.log("Response status:", response.status);
+        const result = await response.json();
+        console.log("Response result:", result);
+        
+        if (result.success) {
+            // Show success message
+            alert(' ' + result.message);
+            
+            // Redirect to main page
+            window.location.href = '/';
+            
+        } else {
+            alert(' Error: ' + result.error);
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error("Vote submission error:", error);
+        alert(' Error submitting vote: ' + error.message);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

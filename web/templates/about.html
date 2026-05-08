@@ -217,19 +217,19 @@
     <div class="about-section">
         <h2>Our Team & Responsibilities</h2>
         <div class="team-split">
-            <div class="team-lead">
-                <h3>ABBA ABDELDJABBAR</h3>
-                <span class="team-lead-role">Project Manager & Integrator</span>
-                <p>Responsible for the overall architecture, GitHub repository management, code integration, deployment, and ensuring all modules work together. Also handles the core business logic (vote processing, tallying, creator workflows, configuration).</p>
-            </div>
-            <div class="team-quad">
-                <div class="team-box">
-                    <div class="team-box-title">
-                        <h3>OINTEN Mohamad Amine</h3>
-                        <span class="team-box-role">Database Specialist</span>
-                    </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="team-lead" style="margin-bottom: 0;">
+                    <h3>ABBA ABDELDJABBAR</h3>
+                    <span class="team-lead-role">Project Manager & Integrator</span>
+                    <p>Responsible for the overall architecture, GitHub repository management, code integration, deployment, and ensuring all modules work together. Also handles the core business logic (vote processing, tallying, creator workflows, configuration).</p>
+                </div>
+                <div class="team-lead" style="margin-bottom: 0;">
+                    <h3>OINTEN Mohamad Amine</h3>
+                    <span class="team-lead-role">Database Specialist</span>
                     <p>Designs and maintains the Supabase schema (votes, voters, encrypted ballots, etc.), writes all CRUD operations in database/queries.py, ensures data integrity, and optimises queries for performance.</p>
                 </div>
+            </div>
+            <div class="team-quad">
                 <div class="team-box">
                     <div class="team-box-title">
                         <h3>BENABED Farouk</h3>
@@ -242,7 +242,14 @@
                         <h3>BELAHRAUI Abderrahman</h3>
                         <span class="team-box-role">Web Frontend Developer</span>
                     </div>
-                    <p>Builds the Flask web interface: routes, templates (base, index, vote, create vote, results, about, contact), static CSS/JS, and ensures a responsive, user-friendly experience with interactive vote cards and modals.</p>
+                    <p>Builds the Flask web interface: routes, templates (base, index, vote, create vote, results, about, contact), static CSS/JS, and ensures a responsive, user-friendly experience. Shares frontend development and UI/UX improvements with Youcef.</p>
+                </div>
+                <div class="team-box">
+                    <div class="team-box-title">
+                        <h3>YOUSFI Youcef</h3>
+                        <span class="team-box-role">Web Frontend Developer</span>
+                    </div>
+                    <p>Works on the Flask web interface, focusing on UI/UX improvements, interactive elements, and assists with template and static asset development. Shares frontend responsibilities with Abderrahman.</p>
                 </div>
                 <div class="team-box">
                     <div class="team-box-title">

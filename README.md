@@ -25,10 +25,16 @@ Implemented RSA blind signatures, key generation, Tiger Tree Hash, and secure co
 
 **Key contributions:** `crypto/blind_signature.py`, `crypto/rsa_utils.py`, `crypto/tth.py`, `crypto/code_generator.py`
 
+
 ### BELAHRAUI Abderrahman - Web Frontend Developer
-Built the Flask web interface, templates, CSS/JS, and responsive design.
+Built the Flask web interface, templates, CSS/JS, and responsive design. Shares frontend and UI/UX responsibilities with Youcef.
 
 **Key contributions:** `web/routes.py`, `web/forms.py`, `web/templates/`, `web/static/`
+
+### YOUSFI Youcef - Web Frontend Developer
+Worked on the Flask web interface, focusing on UI/UX improvements, interactive elements, and assisted with template and static asset development. Shares frontend responsibilities with Abderrahman.
+
+**Key contributions:** `web/templates/`, `web/static/`, UI/UX improvements
 
 ### HOUACHE Hamo - Email & Communication Module
 Integrated SMTP for voter codes and confirmations. Created email templates.

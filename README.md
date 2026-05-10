@@ -1,6 +1,6 @@
 # Blind Signature Electronic Voting System
 
-Hey! This is our cryptography course project - a secure electronic voting system that uses blind signatures to keep votes anonymous while still verifying voter authenticity. We built this as a team of four over the course of a semester, and honestly we're pretty proud of how it turned out.
+Hey! This is our cryptography course project - a secure electronic voting system that uses blind signatures to keep votes anonymous while still verifying voter authenticity. We built this as a team of six over the course of a semester, and honestly we're pretty proud of how it turned out.
 
 ## What This Project Does
 
@@ -15,7 +15,7 @@ Managed overall architecture, GitHub repository, and module integration. Built c
 
 **Key contributions:** `core/voting_protocol.py`, `core/vote_processor.py`, `core/tally.py`, `core/creator.py`, `constants.py`
 
-### OINTEN Mohamad Amine - Database Specialist  
+### OUINTEN Mohammed Amine - Database Specialist  
 Designed Supabase schema and wrote all CRUD operations. Ensured data integrity and query optimization.
 
 **Key contributions:** `database/models.py`, `database/queries.py`, `database/client.py`
@@ -31,12 +31,12 @@ Built the Flask web interface, templates, CSS/JS, and responsive design. Shares 
 
 **Key contributions:** `web/routes.py`, `web/forms.py`, `web/templates/`, `web/static/`
 
-### YOUSFI Youcef - Web Frontend Developer
+### NEFISSI Youcef - Web Frontend Developer
 Worked on the Flask web interface, focusing on UI/UX improvements, interactive elements, and assisted with template and static asset development. Shares frontend responsibilities with Abderrahman.
 
 **Key contributions:** `web/templates/`, `web/static/`, UI/UX improvements
 
-### HOUACHE Hamo - Email & Communication Module
+### HOUACHE Hammou - Email & Communication Module
 Integrated SMTP for voter codes and confirmations. Created email templates.
 
 **Key contributions:** `mailer/sender.py`, `mailer/templates/`

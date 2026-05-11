@@ -30,7 +30,7 @@ def generate_voter_code() -> str:
         A unique voter code string
     """
     code = generate_random_string(12, string.ascii_uppercase + string.digits)
-    return f"-VOT{code[:4]}-{code[4:8]}-{code[8:12]}"
+    return f"VOT-{code[:4]}-{code[4:8]}-{code[8:12]}"
 
 
 def generate_creator_code() -> str:

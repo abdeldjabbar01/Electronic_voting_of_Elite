@@ -20,7 +20,7 @@ Designed Supabase schema and wrote all CRUD operations. Ensured data integrity a
 
 **Key contributions:** `database/models.py`, `database/queries.py`, `database/client.py`
 
-### BENABED Farouk - Cryptography Engineer
+### BENABED Farouk - Cryptography
 Implemented RSA blind signatures, key generation, Tiger Tree Hash, and secure code generation.
 
 **Key contributions:** `crypto/blind_signature.py`, `crypto/rsa_utils.py`, `crypto/tth.py`, `crypto/code_generator.py`
@@ -31,7 +31,7 @@ Built the Flask web interface, templates, CSS/JS, and responsive design. Shares 
 
 **Key contributions:** `web/routes.py`, `web/forms.py`, `web/templates/`, `web/static/`
 
-### NEFISSI Youcef - Web Frontend Developer
+### NEFISSI Mohamed Youcef - Web Frontend Developer
 Worked on the Flask web interface, focusing on UI/UX improvements, interactive elements, and assisted with template and static asset development. Shares frontend responsibilities with Abderrahman.
 
 **Key contributions:** `web/templates/`, `web/static/`, UI/UX improvements
@@ -183,4 +183,4 @@ If you have questions about the implementation, feel free to reach out to any of
 
 ---
 
-**Built with lots of coffee and late nights by ABBA ABDELDJABBAR, OINTEN Mohamad Amine, BENABED Farouk, BELAHRAUI Abderrahman, and HOUACHE Hamo.**
+**Built with lots of coffee and late nights by ABBA ABDELDJABBAR, OUINTEN Mohammed Amine, BENABED Farouk, BELAHRAUI Abderrahman, HOUACHE Hammou and NEFISSI Mohamed Youcef.**
